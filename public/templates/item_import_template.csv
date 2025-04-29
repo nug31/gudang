@@ -1,0 +1,6 @@
+name,description,category,totalStock,availableStock,reservedStock,lowStockThreshold
+Arduino Uno,Microcontroller board based on the ATmega328P,Electronics,20,15,5,5
+Raspberry Pi 4,Single-board computer with 4GB RAM,Electronics,10,8,2,3
+Soldering Iron,Temperature controlled soldering iron,Tools,15,12,3,3
+Breadboard,400 point solderless breadboard,Electronics,30,25,5,10
+LED Kit,Assorted LEDs in different colors,Components,100,90,10,20

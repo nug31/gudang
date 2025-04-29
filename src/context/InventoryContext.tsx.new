@@ -1,0 +1,126 @@
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { Item } from "../types";
+import { mockItems } from "../data/mockData";
+import * as api from "../services/api";
+
+interface InventoryContextType {
+  items: Item[];
+  loading: boolean;
+  error: string | null;
+  updateItemStock: (
+    itemId: string,
+    availableChange: number,
+    reservedChange: number
+  ) => void;
+  addItem: (item: Omit<Item, "id">) => void;
+  getLowStockItems: () => Item[];
+}
+
+const InventoryContext = createContext<InventoryContextType | undefined>(
+  undefined
+);
+
+export const useInventory = () => {
+  const context = useContext(InventoryContext);
+  if (context === undefined) {
+    throw new Error("useInventory must be used within an InventoryProvider");
+  }
+  return context;
+};
+
+export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch items from the API
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        // Try to use the API first
+        try {
+          const apiItems = await api.fetchItems();
+          if (apiItems && apiItems.length > 0) {
+            setItems(apiItems);
+          } else {
+            // Fallback to mock data if API returns empty
+            console.warn('API returned no items, falling back to mock data');
+            setItems(mockItems);
+          }
+        } catch (apiError) {
+          // Fallback to mock data if API fails
+          console.warn('API fetch failed, falling back to mock data:', apiError);
+          setItems(mockItems);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch inventory");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchInventory();
+  }, []);
+
+  const updateItemStock = (
+    itemId: string,
+    availableChange: number,
+    reservedChange: number
+  ) => {
+    try {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                availableStock: Math.max(0, item.availableStock + availableChange),
+                reservedStock: Math.max(0, item.reservedStock + reservedChange),
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to update item stock"
+      );
+    }
+  };
+
+  const addItem = (item: Omit<Item, "id">) => {
+    try {
+      const newItem: Item = {
+        ...item,
+        id: Math.random().toString(36).substr(2, 9),
+      };
+
+      setItems((prev) => [...prev, newItem]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add item");
+      throw err;
+    }
+  };
+
+  const getLowStockItems = () => {
+    return items.filter(
+      (item) => item.availableStock <= item.lowStockThreshold
+    );
+  };
+
+  const value = {
+    items,
+    loading,
+    error,
+    updateItemStock,
+    addItem,
+    getLowStockItems,
+  };
+
+  return (
+    <InventoryContext.Provider value={value}>
+      {children}
+    </InventoryContext.Provider>
+  );
+};

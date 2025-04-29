@@ -1,0 +1,135 @@
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { Request, RequestStatus, RequestItem } from "../types";
+import { mockRequests } from "../data/mockData";
+import { useAuth } from "./AuthContext";
+import * as api from "../services/api";
+
+interface RequestContextType {
+  requests: Request[];
+  loading: boolean;
+  error: string | null;
+  submitRequest: (
+    newRequest: Omit<Request, "id" | "createdAt" | "updatedAt" | "status">
+  ) => void;
+  updateRequestStatus: (
+    requestId: string,
+    status: RequestStatus,
+    pickupDetails?: Request["pickupDetails"]
+  ) => void;
+  getUserRequests: () => Request[];
+}
+
+const RequestContext = createContext<RequestContextType | undefined>(undefined);
+
+export const useRequest = () => {
+  const context = useContext(RequestContext);
+  if (context === undefined) {
+    throw new Error("useRequest must be used within a RequestProvider");
+  }
+  return context;
+};
+
+export const RequestProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    // Fetch requests from the API
+    const fetchRequests = async () => {
+      try {
+        setLoading(true);
+        // Try to use the API first
+        try {
+          const apiRequests = await api.fetchRequests();
+          if (apiRequests && apiRequests.length > 0) {
+            setRequests(apiRequests);
+          } else {
+            // Fallback to mock data if API returns empty
+            console.warn('API returned no requests, falling back to mock data');
+            setRequests(mockRequests);
+          }
+        } catch (apiError) {
+          // Fallback to mock data if API fails
+          console.warn('API fetch failed, falling back to mock data:', apiError);
+          setRequests(mockRequests);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch requests");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRequests();
+  }, []);
+
+  const submitRequest = (
+    newRequest: Omit<Request, "id" | "createdAt" | "updatedAt" | "status">
+  ) => {
+    try {
+      if (!currentUser) {
+        throw new Error("User not authenticated");
+      }
+
+      const request: Request = {
+        ...newRequest,
+        id: Math.random().toString(36).substr(2, 9),
+        status: "pending",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      setRequests((prev) => [...prev, request]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit request");
+      throw err;
+    }
+  };
+
+  const updateRequestStatus = (
+    requestId: string,
+    status: RequestStatus,
+    pickupDetails?: Request["pickupDetails"]
+  ) => {
+    try {
+      setRequests((prev) =>
+        prev.map((request) =>
+          request.id === requestId
+            ? {
+                ...request,
+                status,
+                updatedAt: new Date(),
+                ...(pickupDetails && { pickupDetails }),
+              }
+            : request
+        )
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to update request status"
+      );
+    }
+  };
+
+  const getUserRequests = () => {
+    if (!currentUser) return [];
+    return requests.filter((req) => req.requester.id === currentUser.id);
+  };
+
+  const value = {
+    requests,
+    loading,
+    error,
+    submitRequest,
+    updateRequestStatus,
+    getUserRequests,
+  };
+
+  return (
+    <RequestContext.Provider value={value}>{children}</RequestContext.Provider>
+  );
+};

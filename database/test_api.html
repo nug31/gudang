@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 4px 4px 4px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Test</h1>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="users">Users</div>
+        <div class="tab" data-tab="items">Items</div>
+        <div class="tab" data-tab="requests">Requests</div>
+    </div>
+    
+    <div id="users" class="tab-content active">
+        <h2>User Management</h2>
+        
+        <div class="card">
+            <h3>Get Users</h3>
+            <button id="getUsersBtn">Get Users</button>
+            <div id="getUsersResult" class="result"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Add User</h3>
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label for="userName">Name:</label>
+                    <input type="text" id="userName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email:</label>
+                    <input type="email" id="userEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">Password:</label>
+                    <input type="password" id="userPassword" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Role:</label>
+                    <select id="userRole" name="role">
+                        <option value="requester">Requester</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userDepartment">Department:</label>
+                    <input type="text" id="userDepartment" name="department">
+                </div>
+                <button type="submit">Add User</button>
+            </form>
+            <div id="addUserResult" class="result"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Update User</h3>
+            <form id="updateUserForm">
+                <div class="form-group">
+                    <label for="updateUserId">User ID:</label>
+                    <input type="text" id="updateUserId" name="id" required>
+                </div>
+                <div class="form-group">
+                    <label for="updateUserName">Name:</label>
+                    <input type="text" id="updateUserName" name="name">
+                </div>
+                <div class="form-group">
+                    <label for="updateUserEmail">Email:</label>
+                    <input type="email" id="updateUserEmail" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="updateUserPassword">Password:</label>
+                    <input type="password" id="updateUserPassword" name="password">
+                </div>
+                <div class="form-group">
+                    <label for="updateUserRole">Role:</label>
+                    <select id="updateUserRole" name="role">
+                        <option value="">Select a role</option>
+                        <option value="requester">Requester</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="updateUserDepartment">Department:</label>
+                    <input type="text" id="updateUserDepartment" name="department">
+                </div>
+                <button type="submit">Update User</button>
+            </form>
+            <div id="updateUserResult" class="result"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Delete User</h3>
+            <form id="deleteUserForm">
+                <div class="form-group">
+                    <label for="deleteUserId">User ID:</label>
+                    <input type="text" id="deleteUserId" name="id" required>
+                </div>
+                <button type="submit">Delete User</button>
+            </form>
+            <div id="deleteUserResult" class="result"></div>
+        </div>
+    </div>
+    
+    <div id="items" class="tab-content">
+        <h2>Item Management</h2>
+        
+        <div class="card">
+            <h3>Get Items</h3>
+            <button id="getItemsBtn">Get Items</button>
+            <div id="getItemsResult" class="result"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Add Item</h3>
+            <form id="addItemForm">
+                <div class="form-group">
+                    <label for="itemName">Name:</label>
+                    <input type="text" id="itemName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="itemCategory">Category:</label>
+                    <input type="text" id="itemCategory" name="category" required>
+                </div>
+                <div class="form-group">
+                    <label for="itemDescription">Description:</label>
+                    <textarea id="itemDescription" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="itemTotalStock">Total Stock:</label>
+                    <input type="number" id="itemTotalStock" name="totalStock" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="itemLowStockThreshold">Low Stock Threshold:</label>
+                    <input type="number" id="itemLowStockThreshold" name="lowStockThreshold" min="0" value="0">
+                </div>
+                <button type="submit">Add Item</button>
+            </form>
+            <div id="addItemResult" class="result"></div>
+        </div>
+    </div>
+    
+    <div id="requests" class="tab-content">
+        <h2>Request Management</h2>
+        
+        <div class="card">
+            <h3>Get Requests</h3>
+            <button id="getRequestsBtn">Get Requests</button>
+            <div id="getRequestsResult" class="result"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Submit Request</h3>
+            <form id="submitRequestForm">
+                <div class="form-group">
+                    <label for="requestProjectName">Project Name:</label>
+                    <input type="text" id="requestProjectName" name="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="requesterId">Requester ID:</label>
+                    <input type="text" id="requesterId" name="requesterId" required>
+                </div>
+                <div class="form-group">
+                    <label for="requestReason">Reason:</label>
+                    <textarea id="requestReason" name="reason" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="requestPriority">Priority:</label>
+                    <select id="requestPriority" name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="requestDueDate">Due Date:</label>
+                    <input type="date" id="requestDueDate" name="dueDate">
+                </div>
+                <div class="form-group">
+                    <label>Items:</label>
+                    <div id="requestItems">
+                        <div class="request-item">
+                            <div class="form-group">
+                                <label>Item ID:</label>
+                                <input type="text" class="item-id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Item Name:</label>
+                                <input type="text" class="item-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity:</label>
+                                <input type="number" class="item-quantity" min="1" value="1" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="addRequestItemBtn">Add Item</button>
+                </div>
+                <button type="submit">Submit Request</button>
+            </form>
+            <div id="submitRequestResult" class="result"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Update Request Status</h3>
+            <form id="updateRequestStatusForm">
+                <div class="form-group">
+                    <label for="updateRequestId">Request ID:</label>
+                    <input type="text" id="updateRequestId" name="id" required>
+                </div>
+                <div class="form-group">
+                    <label for="updateRequestStatus">Status:</label>
+                    <select id="updateRequestStatus" name="status" required>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Pickup Details:</label>
+                    <div class="form-group">
+                        <label for="pickupLocation">Location:</label>
+                        <input type="text" id="pickupLocation" name="location">
+                    </div>
+                    <div class="form-group">
+                        <label for="pickupTime">Pickup Time:</label>
+                        <input type="datetime-local" id="pickupTime" name="time">
+                    </div>
+                    <div class="form-group">
+                        <label for="pickupDelivered">Delivered:</label>
+                        <select id="pickupDelivered" name="delivered">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Update Status</button>
+            </form>
+            <div id="updateRequestStatusResult" class="result"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and tab contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding tab content
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // User Management
+        document.getElementById('getUsersBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('getUsersResult');
+            resultDiv.innerHTML = '<p>Loading users...</p>';
+            
+            try {
+                const response = await fetch('http://localhost/direct_user_management.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Users fetched successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('addUserResult');
+            resultDiv.innerHTML = '<p>Adding user...</p>';
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                role: formData.get('role'),
+                department: formData.get('department')
+            };
+            
+            try {
+                const response = await fetch('http://localhost/direct_user_management.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">User added successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        document.getElementById('updateUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('updateUserResult');
+            resultDiv.innerHTML = '<p>Updating user...</p>';
+            
+            const formData = new FormData(e.target);
+            const userId = formData.get('id');
+            
+            const userData = {};
+            if (formData.get('name')) userData.name = formData.get('name');
+            if (formData.get('email')) userData.email = formData.get('email');
+            if (formData.get('password')) userData.password = formData.get('password');
+            if (formData.get('role')) userData.role = formData.get('role');
+            if (formData.get('department')) userData.department = formData.get('department');
+            
+            try {
+                const response = await fetch(`http://localhost/direct_user_management.php?id=${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">User updated successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        document.getElementById('deleteUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('deleteUserResult');
+            resultDiv.innerHTML = '<p>Deleting user...</p>';
+            
+            const formData = new FormData(e.target);
+            const userId = formData.get('id');
+            
+            try {
+                const response = await fetch(`http://localhost/direct_user_management.php?id=${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">User deleted successfully!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        // Item Management
+        document.getElementById('getItemsBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('getItemsResult');
+            resultDiv.innerHTML = '<p>Loading items...</p>';
+            
+            try {
+                const response = await fetch('http://localhost/direct_add_item_fixed.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Items fetched successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('addItemResult');
+            resultDiv.innerHTML = '<p>Adding item...</p>';
+            
+            const formData = new FormData(e.target);
+            const itemData = {
+                name: formData.get('name'),
+                category: formData.get('category'),
+                description: formData.get('description'),
+                totalStock: parseInt(formData.get('totalStock')),
+                lowStockThreshold: parseInt(formData.get('lowStockThreshold'))
+            };
+            
+            try {
+                const response = await fetch('http://localhost/direct_add_item_fixed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(itemData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Item added successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        // Request Management
+        document.getElementById('getRequestsBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('getRequestsResult');
+            resultDiv.innerHTML = '<p>Loading requests...</p>';
+            
+            try {
+                const response = await fetch('http://localhost/api_test.php?endpoint=requests');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Requests fetched successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        // Add request item button
+        document.getElementById('addRequestItemBtn').addEventListener('click', () => {
+            const requestItems = document.getElementById('requestItems');
+            const newItem = document.createElement('div');
+            newItem.className = 'request-item';
+            newItem.innerHTML = `
+                <div class="form-group">
+                    <label>Item ID:</label>
+                    <input type="text" class="item-id" required>
+                </div>
+                <div class="form-group">
+                    <label>Item Name:</label>
+                    <input type="text" class="item-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity:</label>
+                    <input type="number" class="item-quantity" min="1" value="1" required>
+                </div>
+                <button type="button" class="remove-item">Remove</button>
+            `;
+            
+            // Add event listener to remove button
+            newItem.querySelector('.remove-item').addEventListener('click', () => {
+                newItem.remove();
+            });
+            
+            requestItems.appendChild(newItem);
+        });
+        
+        document.getElementById('submitRequestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('submitRequestResult');
+            resultDiv.innerHTML = '<p>Submitting request...</p>';
+            
+            const formData = new FormData(e.target);
+            
+            // Get items
+            const items = [];
+            document.querySelectorAll('.request-item').forEach(item => {
+                const itemId = item.querySelector('.item-id').value;
+                const itemName = item.querySelector('.item-name').value;
+                const quantity = parseInt(item.querySelector('.item-quantity').value);
+                
+                if (itemId && itemName && quantity > 0) {
+                    items.push({
+                        itemId,
+                        itemName,
+                        quantity
+                    });
+                }
+            });
+            
+            // Validate form data
+            if (items.length === 0) {
+                resultDiv.innerHTML = '<p class="error">Please add at least one item</p>';
+                return;
+            }
+            
+            const requestData = {
+                projectName: formData.get('projectName'),
+                requesterId: formData.get('requesterId'),
+                reason: formData.get('reason'),
+                priority: formData.get('priority'),
+                dueDate: formData.get('dueDate') || null,
+                items
+            };
+            
+            try {
+                const response = await fetch('http://localhost/direct_insert_fixed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Request submitted successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                    e.target.reset();
+                    document.getElementById('requestItems').innerHTML = `
+                        <div class="request-item">
+                            <div class="form-group">
+                                <label>Item ID:</label>
+                                <input type="text" class="item-id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Item Name:</label>
+                                <input type="text" class="item-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity:</label>
+                                <input type="number" class="item-quantity" min="1" value="1" required>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        document.getElementById('updateRequestStatusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('updateRequestStatusResult');
+            resultDiv.innerHTML = '<p>Updating request status...</p>';
+            
+            const formData = new FormData(e.target);
+            const requestId = formData.get('id');
+            const status = formData.get('status');
+            
+            const updateData = { status };
+            
+            // Add pickup details if provided
+            if (formData.get('location')) {
+                updateData.pickupDetails = {
+                    location: formData.get('location'),
+                    time: formData.get('time') || null,
+                    delivered: formData.get('delivered') === 'true'
+                };
+            }
+            
+            try {
+                const response = await fetch(`http://localhost/direct_update.php?id=${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Request status updated successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
++----------------+       +----------------+       +----------------+
+|     users      |       |     items      |       |    requests    |
++----------------+       +----------------+       +----------------+
+| id (PK)        |       | id (PK)        |       | id (PK)        |
+| name           |       | name           |       | project_name   |
+| email          |       | description    |       | requester_id (FK) |
+| password       |       | total_stock    |       | reason         |
+| role           |       | available_stock|       | priority       |
+| department     |       | reserved_stock |       | due_date       |
+| created_at     |       | low_stock_threshold |  | status         |
+| updated_at     |       | category       |       | created_at     |
++----------------+       | created_at     |       | updated_at     |
+        ^                | updated_at     |       +----------------+
+        |                +----------------+               ^
+        |                        ^                        |
+        |                        |                        |
+        |                        |                        |
+        |                        v                        |
+        |                +----------------+               |
+        |                | request_items  |               |
+        |                +----------------+               |
+        |                | id (PK)        |               |
+        |                | request_id (FK)|---------------+
+        |                | item_id (FK)   |
+        |                | quantity       |
+        |                +----------------+
+        |
+        |
+        |                +----------------+
+        |                | pickup_details |
+        |                +----------------+
+        |                | id (PK)        |
+        |                | request_id (FK)|---------------+
+        |                | location       |
+        |                | pickup_time    |
+        |                | delivered      |
+        |                | created_at     |
+        |                | updated_at     |
+        +----------------+----------------+

@@ -1,0 +1,142 @@
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { User } from "../types";
+import { mockUsers } from "../data/mockData";
+import * as api from "../services/api";
+
+interface AuthContextType {
+  currentUser: User | null;
+  loading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: {
+    name: string;
+    email: string;
+    password: string;
+    department?: string;
+  }) => Promise<void>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if user is stored in localStorage
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Try to use the API first
+      try {
+        const user = await api.login(email, password);
+        setCurrentUser(user);
+        localStorage.setItem("currentUser", JSON.stringify(user));
+      } catch (apiError) {
+        // Fallback to mock data if API fails
+        console.warn('API login failed, falling back to mock data:', apiError);
+        const user = mockUsers.find((u) => u.email === email);
+        
+        if (user && password === "password") {
+          // Simple password check for demo
+          setCurrentUser(user);
+          localStorage.setItem("currentUser", JSON.stringify(user));
+        } else {
+          throw new Error("Invalid email or password");
+        }
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (data: {
+    name: string;
+    email: string;
+    password: string;
+    department?: string;
+  }) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Try to use the API first
+      try {
+        const newUser = await api.register(data);
+        setCurrentUser(newUser);
+        localStorage.setItem("currentUser", JSON.stringify(newUser));
+      } catch (apiError) {
+        // Fallback to mock data if API fails
+        console.warn('API registration failed, falling back to mock data:', apiError);
+        
+        // Check if email already exists
+        if (mockUsers.some((u) => u.email === data.email)) {
+          throw new Error("Email already in use");
+        }
+
+        // Create new user
+        const newUser: User = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: data.name,
+          email: data.email,
+          role: "requester", // New users are always requesters by default
+          department: data.department,
+        };
+
+        // In a real app, you would make an API call here
+        mockUsers.push(newUser);
+
+        // Auto-login after registration
+        setCurrentUser(newUser);
+        localStorage.setItem("currentUser", JSON.stringify(newUser));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to register");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem("currentUser");
+  };
+
+  const value = {
+    currentUser,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

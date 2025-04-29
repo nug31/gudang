@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Request Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        pre {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .item-row select {
+            flex: 2;
+        }
+        .item-row input {
+            flex: 1;
+        }
+        .item-row button {
+            flex: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Emergency Request Test</h1>
+    
+    <div class="card">
+        <h2>Create a New Request</h2>
+        <form id="requestForm">
+            <div>
+                <label for="projectName">Project Name *</label>
+                <input type="text" id="projectName" name="projectName" required placeholder="Project Name">
+            </div>
+            <div>
+                <label for="requesterId">Requester *</label>
+                <select id="requesterId" name="requesterId" required>
+                    <option value="">Select a requester</option>
+                    <!-- Users will be loaded here -->
+                </select>
+            </div>
+            <div>
+                <label for="reason">Reason *</label>
+                <textarea id="reason" name="reason" required placeholder="Reason for the request" rows="3"></textarea>
+            </div>
+            <div>
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div>
+                <label for="dueDate">Due Date</label>
+                <input type="date" id="dueDate" name="dueDate">
+            </div>
+            
+            <h3>Items</h3>
+            <div id="itemsContainer">
+                <!-- Item rows will be added here -->
+                <div class="item-row">
+                    <select class="item-select" required>
+                        <option value="">Select an item</option>
+                        <!-- Items will be loaded here -->
+                    </select>
+                    <input type="number" class="item-quantity" min="1" value="1" required>
+                    <button type="button" class="remove-item">X</button>
+                </div>
+            </div>
+            <button type="button" id="addItemBtn">Add Another Item</button>
+            
+            <div style="margin-top: 20px;">
+                <button type="submit">Submit Request</button>
+            </div>
+        </form>
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const requestForm = document.getElementById('requestForm');
+        const requesterIdSelect = document.getElementById('requesterId');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const resultElement = document.getElementById('result');
+        
+        // API URLs
+        const EMERGENCY_API_URL = 'http://localhost/emergency_insert.php';
+        const USERS_API_URL = 'http://localhost/api_test.php?endpoint=users';
+        const ITEMS_API_URL = 'http://localhost/api_test.php?endpoint=items';
+        
+        // Load users and items on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUsers();
+            await loadItems();
+            
+            // Add event listeners
+            addItemBtn.addEventListener('click', addItemRow);
+            requestForm.addEventListener('submit', submitRequest);
+            
+            // Add event listener to the first remove button
+            document.querySelector('.remove-item').addEventListener('click', function() {
+                if (document.querySelectorAll('.item-row').length > 1) {
+                    this.closest('.item-row').remove();
+                }
+            });
+        });
+        
+        // Load users from API
+        async function loadUsers() {
+            try {
+                const response = await fetch(USERS_API_URL);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    data.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = `${user.name} (${user.email})`;
+                        requesterIdSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Failed to load users:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+        
+        // Load items from API
+        async function loadItems() {
+            try {
+                const response = await fetch(ITEMS_API_URL);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Get all item select elements
+                    const itemSelects = document.querySelectorAll('.item-select');
+                    
+                    // Add options to each select
+                    itemSelects.forEach(select => {
+                        // Clear existing options except the first one
+                        while (select.options.length > 1) {
+                            select.remove(1);
+                        }
+                        
+                        // Add new options
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = `${item.name} (${item.quantity} available)`;
+                            option.dataset.name = item.name;
+                            select.appendChild(option);
+                        });
+                    });
+                } else {
+                    console.error('Failed to load items:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading items:', error);
+            }
+        }
+        
+        // Add a new item row
+        function addItemRow() {
+            const newRow = document.createElement('div');
+            newRow.className = 'item-row';
+            
+            newRow.innerHTML = `
+                <select class="item-select" required>
+                    <option value="">Select an item</option>
+                    <!-- Items will be loaded here -->
+                </select>
+                <input type="number" class="item-quantity" min="1" value="1" required>
+                <button type="button" class="remove-item">X</button>
+            `;
+            
+            itemsContainer.appendChild(newRow);
+            
+            // Add event listener to the new remove button
+            newRow.querySelector('.remove-item').addEventListener('click', function() {
+                this.closest('.item-row').remove();
+            });
+            
+            // Load items for the new select
+            loadItems();
+        }
+        
+        // Submit the request
+        async function submitRequest(e) {
+            e.preventDefault();
+            
+            resultElement.innerHTML = '<p>Submitting request...</p>';
+            
+            // Get form data
+            const projectName = document.getElementById('projectName').value;
+            const requesterId = document.getElementById('requesterId').value;
+            const reason = document.getElementById('reason').value;
+            const priority = document.getElementById('priority').value;
+            const dueDate = document.getElementById('dueDate').value || null;
+            
+            // Get items
+            const itemRows = document.querySelectorAll('.item-row');
+            const items = [];
+            
+            itemRows.forEach(row => {
+                const itemSelect = row.querySelector('.item-select');
+                const itemId = itemSelect.value;
+                const itemName = itemSelect.options[itemSelect.selectedIndex].dataset.name;
+                const quantity = parseInt(row.querySelector('.item-quantity').value);
+                
+                if (itemId && quantity > 0) {
+                    items.push({
+                        itemId,
+                        itemName,
+                        quantity
+                    });
+                }
+            });
+            
+            // Validate form data
+            if (!projectName || !requesterId || !reason || items.length === 0) {
+                resultElement.innerHTML = '<p class="error">Please fill in all required fields and add at least one item</p>';
+                return;
+            }
+            
+            // Prepare request data
+            const requestData = {
+                projectName,
+                requesterId,
+                items,
+                reason,
+                priority,
+                dueDate
+            };
+            
+            console.log('Submitting request:', requestData);
+            
+            try {
+                const response = await fetch(EMERGENCY_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.success) {
+                    resultElement.innerHTML = `
+                        <p class="success">Request submitted successfully!</p>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                    
+                    // Clear the form
+                    requestForm.reset();
+                    
+                    // Reset items to just one row
+                    itemsContainer.innerHTML = `
+                        <div class="item-row">
+                            <select class="item-select" required>
+                                <option value="">Select an item</option>
+                                <!-- Items will be loaded here -->
+                            </select>
+                            <input type="number" class="item-quantity" min="1" value="1" required>
+                            <button type="button" class="remove-item">X</button>
+                        </div>
+                    `;
+                    
+                    // Add event listener to the new remove button
+                    document.querySelector('.remove-item').addEventListener('click', function() {
+                        if (document.querySelectorAll('.item-row').length > 1) {
+                            this.closest('.item-row').remove();
+                        }
+                    });
+                    
+                    // Reload items
+                    loadItems();
+                } else {
+                    resultElement.innerHTML = `
+                        <p class="error">Failed to submit request: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                resultElement.innerHTML = `
+                    <p class="error">Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

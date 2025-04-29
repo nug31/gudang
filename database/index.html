@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ItemTrack Database Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4b5563;
+            margin-top: 30px;
+        }
+        .card {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        pre {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ItemTrack Database Test</h1>
+    
+    <div class="card">
+        <h2>API Tests</h2>
+        <div>
+            <button onclick="fetchUsers()">Fetch Users</button>
+            <button onclick="fetchItems()">Fetch Items</button>
+            <button onclick="fetchRequests()">Fetch Requests</button>
+        </div>
+        <div class="result">
+            <h3>Result:</h3>
+            <pre id="apiResult">Click a button to test the API...</pre>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Database Connection Test</h2>
+        <p>To test the database connection directly, visit:</p>
+        <ul>
+            <li><a href="test_connection.php" target="_blank">test_connection.php</a></li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>Database Setup Instructions</h2>
+        <p>To set up the database:</p>
+        <ol>
+            <li>Open phpMyAdmin from Laragon</li>
+            <li>Create a new database named "itemtrack"</li>
+            <li>Select the "itemtrack" database</li>
+            <li>Go to the "Import" tab</li>
+            <li>Click "Choose File" and select the <code>itemtrack_db.sql</code> file</li>
+            <li>Click "Go" to import the database structure and sample data</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Function to fetch users from the API
+        async function fetchUsers() {
+            try {
+                const response = await fetch('api.php?endpoint=users');
+                const data = await response.json();
+                document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Function to fetch items from the API
+        async function fetchItems() {
+            try {
+                const response = await fetch('api.php?endpoint=items');
+                const data = await response.json();
+                document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Function to fetch requests from the API
+        async function fetchRequests() {
+            try {
+                const response = await fetch('api.php?endpoint=requests');
+                const data = await response.json();
+                document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
